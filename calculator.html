@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Premium Cartoon Calculator</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #0d1b4b, #020024);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      position: relative;
+      background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdTzBCro1kWaf2UbTLce4-A6XRUriIV_wY_w&s');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: overlay;
+      background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+    }
+
+    /* Solar glow effect */
+    .solar-glow {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(255, 223, 0, 0.2) 0%, rgba(255, 147, 0, 0.1) 50%, transparent 70%);
+      transform: translate(-50%, -50%);
+      z-index: -2;
+      animation: pulseGlow 8s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+    }
+
+    /* Background bubble effect */
+    .bubbles {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .bubble {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: rise 10s infinite ease-in;
+    }
+
+    @keyframes rise {
+      0% { transform: translateY(100vh) scale(0.5); opacity: 0.3; }
+      100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
+    }
+
+    /* Water ripple effect */
+    canvas#rippleCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.3;
+    }
+
+    .calculator {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(150, 150, 150, 0.1));
+      backdrop-filter: blur(25px);
+      border-radius: 35px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 10px 20px rgba(0, 0, 0, 0.4),
+                  inset 0 2px 5px rgba(255, 255, 255, 0.3), inset 0 -2px 5px rgba(0, 0, 0, 0.3);
+      width: 380px;
+      padding: 40px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      animation: float2D 6s infinite ease-in-out;
+      z-index: 1;
+      position: relative;
+    }
+
+    @keyframes float2D {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    #display {
+      height: 100px;
+      background: linear-gradient(145deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.8));
+      color: #ffffff;
+      text-align: right;
+      font-size: 3em;
+      padding: 25px;
+      border-radius: 25px;
+      margin-bottom: 35px;
+      overflow-x: auto;
+      box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.6), 0 5px 10px rgba(0, 0, 0, 0.3);
+      transition: background 0.4s ease, transform 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #display:hover {
+      background: linear-gradient(145deg, rgba(0, 0, 0, 1), rgba(20, 20, 20, 0.9));
+      transform: scale(1.02);
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      position: relative;
+      perspective: 1000px;
+    }
+
+    .btn {
+      padding: 25px;
+      font-size: 1.6em;
+      border: none;
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.35), rgba(180, 180, 180, 0.25));
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+                  inset 0 3px 6px rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(10deg) rotateY(10deg);
+      font-family: 'Comic Neue', cursive; /* Cartoonish font */
+    }
+
+    .btn:hover {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.45), rgba(160, 160, 160, 0.35));
+      transform: rotateX(5deg) rotateY(5deg) translateY(-5px) scale(1.1);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn:active {
+      animation: cartoonBounce 0.4s ease;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.6), rgba(160, 160, 160, 0.5));
+    }
+
+    @keyframes cartoonBounce {
+      0% { transform: rotateX(0deg) rotateY(0deg) scale(1); }
+      30% { transform: rotateX(0deg) rotateY(0deg) scale(1.3); }
+      60% { transform: rotateX(0deg) rotateY(0deg) scale(0.9); }
+      100% { transform: rotateX(0deg) rotateY(0deg) scale(1); }
+    }
+
+    .operator {
+      background: linear-gradient(145deg, #ff6b6b, #ff4757);
+      color: white;
+    }
+
+    .operator:hover {
+      background: linear-gradient(145deg, #ff4757, #ff2f3f);
+    }
+
+    #equals {
+      background: linear-gradient(145deg, #2ecc71, #27ae60);
+      color: white;
+    }
+
+    #equals:hover {
+      background: linear-gradient(145deg, #27ae60, #219653);
+    }
+
+    #clear {
+      background: linear-gradient(145deg, #6c5ce7, #4834d4);
+      color: white;
+    }
+
+    #clear:hover {
+      background: linear-gradient(145deg, #4834d4, #3b2fad);
+    }
+
+    #backspace {
+      background: linear-gradient(145deg, #f1c40f, #e67e22);
+      color: white;
+    }
+
+    #backspace:hover {
+      background: linear-gradient(145deg, #e67e22, #d35400);
+    }
+
+    /* Scrollbar styling for display */
+    #display::-webkit-scrollbar {
+      height: 12px;
+    }
+
+    #display::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 15px;
+    }
+
+    #display::-webkit-scrollbar-thumb {
+      background: #00e7ff;
+      border-radius: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="solar-glow"></div>
+  <div class="bubbles" id="bubbles"></div>
+  <canvas id="rippleCanvas"></canvas>
+  <div class="calculator">
+    <div id="display">0</div>
+    <div class="buttons">
+      <button class="btn" data-value="7">7</button>
+      <button class="btn" data-value="8">8</button>
+      <button class="btn" data-value="9">9</button>
+      <button class="btn operator" data-value="/">÷</button>
+      <button class="btn" data-value="4">4</button>
+      <button class="btn" data-value="5">5</button>
+      <button class="btn" data-value="6">6</button>
+      <button class="btn operator" data-value="*">×</button>
+      <button class="btn" data-value="1">1</button>
+      <button class="btn" data-value="2">2</button>
+      <button class="btn" data-value="3">3</button>
+      <button class="btn operator" data-value="-">−</button>
+      <button class="btn" data-value="0">0</button>
+      <button class="btn" data-value=".">.</button>
+      <button class="btn" id="equals">=</button>
+      <button class="btn operator" data-value="+">+</button>
+      <button class="btn" id="clear">C</button>
+      <button class="btn" id="backspace">⌫</button>
+    </div>
+  </div>
+  <audio id="bubbleSound" src="https://cdn.pixabay.com/audio/2023/03/25/audio_2e6f137087.mp3"></audio>
+
+  <script>
+    // Calculator logic
+    const display = document.getElementById("display");
+    const buttons = document.querySelectorAll(".btn");
+    const bubbleSound = document.getElementById("bubbleSound");
+    let currentInput = "";
+    let resetDisplay = false;
+
+    buttons.forEach(button => {
+      button.addEventListener("click", () => {
+        const value = button.dataset.value;
+
+        // Play bubble sound
+        bubbleSound.currentTime = 0;
+        bubbleSound.play().catch(() => {});
+
+        if (button.id === "clear") {
+          currentInput = "";
+          display.textContent = "0";
+        } else if (button.id === "backspace") {
+          currentInput = currentInput.slice(0, -1);
+          display.textContent = currentInput || "0";
+        } else if (button.id === "equals") {
+          try {
+            const result = eval(currentInput);
+            display.textContent = result;
+            currentInput = result.toString();
+            resetDisplay = true;
+          } catch {
+            display.textContent = "Error";
+            currentInput = "";
+          }
+        } else {
+          if (resetDisplay && !isNaN(value)) {
+            currentInput = value;
+            resetDisplay = false;
+          } else {
+            currentInput += value;
+          }
+          display.textContent = currentInput || "0";
+        }
+      });
+    });
+
+    // Background bubble effect
+    const bubblesContainer = document.getElementById("bubbles");
+    for (let i = 0; i < 30; i++) {
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.style.width = `${Math.random() * 20 + 10}px`;
+      bubble.style.height = bubble.style.width;
+      bubble.style.left = `${Math.random() * 100}vw`;
+      bubble.style.animationDelay = `${Math.random() * 8}s`;
+      bubble.style.animationDuration = `${Math.random() * 8 + 8}s`;
+      bubblesContainer.appendChild(bubble);
+    }
+
+    // Water ripple effect
+    const canvas = document.getElementById("rippleCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let ripples = [];
+
+    function createRipple(x, y) {
+      ripples.push({
+        x: x,
+        y: y,
+        radius: 0,
+        opacity: 0.5,
+        speed: 2 + Math.random() * 2
+      });
+    }
+
+    function drawRipples() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ripples.forEach((ripple, index) => {
+        ctx.beginPath();
+        ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(0, 231, 255, ${ripple.opacity})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ripple.radius += ripple.speed;
+        ripple.opacity -= 0.005;
+        if (ripple.opacity <= 0) {
+          ripples.splice(index, 1);
+        }
+      });
+    }
+
+    function animate() {
+      drawRipples();
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    canvas.addEventListener("click", (e) => {
+      createRipple(e.clientX, e.clientY);
+    });
+
+    setInterval(() => {
+      createRipple(Math.random() * canvas.width, Math.random() * canvas.height);
+    }, 2000);
+  </script>
+</body>
+</html>
